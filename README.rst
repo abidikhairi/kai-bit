@@ -30,7 +30,7 @@
 |
 
 =======
-kai-bit
+Biological Instruction Tuning
 =======
 
 

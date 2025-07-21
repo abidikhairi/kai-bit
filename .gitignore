@@ -1,3 +1,11 @@
+# Testing and development files
+data/dev
+data/test
+data/tmp
+*_test.*
+*_dev.*
+*.ipynb
+
 # Temporary and binary files
 *~
 *.py[cod]
