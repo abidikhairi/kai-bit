@@ -1,5 +1,5 @@
-from typing import Union
-from torch import optim
+from typing import Union, Optional
+from torch import LongTensor, optim
 from transformers import AutoTokenizer
 from transformers.trainer_utils import SchedulerType
 from transformers.optimization import get_scheduler
@@ -113,22 +113,45 @@ class BiologicalInstructionTuning(LightningModule):
         }
     
 
-    def forward(self, *args, **kwargs):
-        """protein
-        Override this method to define the forward pass of the model.
-        
-        Args:
-            *args: Variable length argument list.
-            **kwargs: Arbitrary keyword arguments.
-        
-        Returns:
-            The output of the proteinmodel.
+    def forward(
+        self,
+        protein_input_ids: LongTensor,
+        input_ids: LongTensor,
+        protein_attention_mask: Optional[LongTensor] = None, # type: ignore
+        attention_mask: Optional[LongTensor] = None, # type: ignore
+        labels: Optional[LongTensor] = None, # type: ignore
+        **kwargs
+    ):
         """
-        return super().forward(*args, **kwargs)
+        Forward pass of the model.
+        Args:
+            protein_input_ids: Input IDs for the protein sequences.
+            input_ids: Input IDs for the text sequences.
+            protein_attention_mask: Attention mask for the protein sequences.
+            attention_mask: Attention mask for the text sequences.
+            labels: Labels for the text sequences.
+            **kwargs: Additional keyword arguments.
+        Returns:
+            The output of the model.
+        """
+        protein_features = self.protein_encoder(
+            input_ids=protein_input_ids,
+            attention_mask=protein_attention_mask
+        ).pooler_output
+        
+        protein_features = self.prot2text(protein_features)
+        
+        return self.language_model(
+            protein_features=protein_features,
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            labels=labels,
+            **kwargs
+        )
     
     def training_step(self, batch, batch_idx):
         """
-        Override this method to define the training step.
+        Training step.
         
         Args:
             batch: The input batch of data.
@@ -144,8 +167,23 @@ class BiologicalInstructionTuning(LightningModule):
         attention_mask = batch['attention_mask']
         labels = batch['input_ids'].clone()
         
-        return super().training_step(batch, batch_idx)
-    
+        labels[labels == self.language_tokenizer.pad_token_id] = -100 # type: ignore
+        
+        outputs = self(
+            protein_input_ids=protein_input_ids,
+            input_ids=input_ids,
+            protein_attention_mask=protein_attention_mask,
+            attention_mask=attention_mask,
+            labels=labels,
+            return_dict=True
+        )
+        
+        self.log("train_loss", outputs.loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log("train_perplexity", outputs.loss.exp(), on_step=True, on_epoch=True, logger=True)
+        self.log("learning_rate", self.optimizers().param_groups[0]['lr'], on_step=True, on_epoch=True, logger=True) # type: ignore
+        
+        return outputs.loss
+
     
     def validation_step(self, batch, batch_idx):
         """
@@ -158,7 +196,29 @@ class BiologicalInstructionTuning(LightningModule):
         Returns:
             The loss value for the validation step.
         """
-        return super().validation_step(batch, batch_idx)
+        
+        protein_input_ids = batch['protein_input_ids']
+        protein_attention_mask = batch['protein_attention_mask']
+
+        input_ids = batch['input_ids']
+        attention_mask = batch['attention_mask']
+        labels = batch['input_ids'].clone()
+        
+        labels[labels == self.language_tokenizer.pad_token_id] = -100 # type: ignore
+        
+        outputs = self(
+            protein_input_ids=protein_input_ids,
+            input_ids=input_ids,
+            protein_attention_mask=protein_attention_mask,
+            attention_mask=attention_mask,
+            labels=labels,
+            return_dict=True
+        )
+        
+        self.log("train_loss", outputs.loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log("valid_loss", outputs.loss.exp(), on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        
+        return outputs.loss
     
     def test_step(self, batch, batch_idx):
         """
