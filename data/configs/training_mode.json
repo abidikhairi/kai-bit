@@ -1,0 +1,6 @@
+{
+    "freeze_protein_encoder": true,
+    "freeze_protein_pooler": false,
+    "freeze_text_decoder": false,
+    "freeze_projection_layer": false
+}
