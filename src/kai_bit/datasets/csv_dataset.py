@@ -53,10 +53,10 @@ class CsvDataModule(LightningDataModule):
 
     def setup(self, stage=None):
         for split, path in self.dataset_paths.items():
-            if stage is None or stage == split:
-                if not osp.exists(path):
-                    raise FileNotFoundError(f"Dataset file {path} does not exist.")
-                self.dataset[split] = self._load_dataset(path)
+            if not osp.exists(path):
+                raise FileNotFoundError(f"Dataset file {path} does not exist.")
+            self.dataset[split] = self._load_dataset(path)
+
 
     def _load_dataset(self, csv_file):
         return Dataset.from_csv(csv_file) \
