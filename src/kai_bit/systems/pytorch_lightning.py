@@ -63,6 +63,9 @@ class BiologicalInstructionTuning(LightningModule):
         else:
             raise ValueError("language_model_or_path must be a string or an instance of TextLlamaDecoder")
 
+        self.language_model = self.language_model.train()
+        self.protein_encoder = self.protein_encoder.train()
+
         if isinstance(language_tokenizer_or_path, str):
             self.language_tokenizer = AutoTokenizer.from_pretrained(language_tokenizer_or_path)
         elif isinstance(language_tokenizer_or_path, AutoTokenizer):
@@ -78,20 +81,16 @@ class BiologicalInstructionTuning(LightningModule):
             raise ValueError("protein_tokenizer_or_path must be a string or an instance of AutoTokenizer")
             
         if self.training_mode.freeze_protein_encoder:
-            for param in self.protein_encoder.encoder.parameters():
-                param.requires_grad = False
+            self.protein_encoder.encoder.requires_grad_(False)
                 
         if self.training_mode.freeze_protein_pooler:
-            for param in self.protein_encoder.pooler.parameters(): # type: ignore
-                param.requires_grad = False
-    
+            self.protein_encoder.pooler.requires_grad_(False) # type: ignore
+
         if self.training_mode.freeze_text_decoder:
-            for param in self.language_model.parameters():
-                param.requires_grad = False
+            self.language_model.requires_grad_(False)
                 
         if self.training_mode.freeze_projection_layer:
-            for param in self.prot2text.parameters():
-                param.requires_grad = False
+            self.prot2text.requires_grad_(False)
     
     def configure_optimizers(self):
         optimizer = optim.AdamW(
@@ -215,8 +214,8 @@ class BiologicalInstructionTuning(LightningModule):
             return_dict=True
         )
         
-        self.log("train_loss", outputs.loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
-        self.log("valid_loss", outputs.loss.exp(), on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log("valid_loss", outputs.loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log("valid_perplexity", outputs.loss.exp(), on_step=True, on_epoch=True, prog_bar=True, logger=True)
         
         return outputs.loss
     
