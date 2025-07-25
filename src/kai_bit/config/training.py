@@ -6,9 +6,19 @@ class OptimizerConfig:
     """
     Configuration for the optimizer.
     """
-    learning_rate: float = field(
+    lm_learning_rate: float = field(
         default=1e-4,
-        metadata={"help": "The learning rate for the optimizer."}
+        metadata={"help": "Language model learning rate."}
+    )
+    
+    encoder_learning_rate: float = field(
+        default=1e-5,
+        metadata={"help": "Protein encoder learning rate."}
+    )
+    
+    projector_learning_rate: float = field(
+        default=1e-3,
+        metadata={"help": "Protein projector learning rate."}
     )
     
     weight_decay: float = field(
