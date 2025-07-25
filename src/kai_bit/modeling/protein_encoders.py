@@ -29,6 +29,8 @@ class ProteinToTextProjection(nn.Module):
         
         self.layer_norm = nn.LayerNorm(protein_hidden_size)
         self.projection = nn.Linear(protein_hidden_size, text_hidden_size, False)
+        
+        # TODO: add initialization here
 
     def forward(self, x):
         x = self.layer_norm(x)

@@ -220,16 +220,11 @@ class BiologicalInstructionTuning(LightningModule):
             The loss value for the training step.
         """
         protein_input_ids = batch['protein_input_ids']
-        protein_attention_mask = batch['protein_attention_mask'].clone()
+        protein_attention_mask = batch['protein_attention_mask']
 
         input_ids = batch['input_ids']
         attention_mask = batch['attention_mask']
         labels = batch['labels']
-        
-        # shift labels to right
-        shifted_labels = torch.zeros_like(labels)
-        shifted_labels[:, 1:] = labels[:, :-1].clone()
-        shifted_labels[:, 0] = -100
     
         outputs = self(
             protein_input_ids=protein_input_ids,
@@ -239,8 +234,12 @@ class BiologicalInstructionTuning(LightningModule):
             return_dict=True
         )
         
-        logits = outputs.logits.view(-1, self.language_model.config.vocab_size)
-        loss = self.loss_fn(logits, shifted_labels.view(-1))
+        logits = outputs.logits[:, :-1, :].contiguous()
+        labels = labels[:, 1:].contiguous()
+        
+        logits = logits.view(-1, self.language_model.config.vocab_size)
+        
+        loss = self.loss_fn(logits, labels.view(-1))        
         
         self.log("train/loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         self.log("train/perplexity", loss.exp(), on_step=True, on_epoch=True, logger=True)
@@ -267,11 +266,6 @@ class BiologicalInstructionTuning(LightningModule):
         input_ids = batch['input_ids']
         attention_mask = batch['attention_mask']
         labels = batch['labels']
-        
-        # shift labels to right
-        shifted_labels = torch.zeros_like(labels)
-        shifted_labels[:, 1:] = labels[:, :-1].clone()
-        shifted_labels[:, 0] = -100
     
         outputs = self(
             protein_input_ids=protein_input_ids,
@@ -281,9 +275,12 @@ class BiologicalInstructionTuning(LightningModule):
             return_dict=True
         )
         
-        logits = outputs.logits.view(-1, self.language_model.config.vocab_size)
-        loss = self.loss_fn(logits, shifted_labels.view(-1))
+        logits = outputs.logits[:, :-1, :].contiguous()
+        labels = labels[:, 1:].contiguous()
         
+        logits = logits.view(-1, self.language_model.config.vocab_size)
+        
+        loss = self.loss_fn(logits, labels.view(-1))        
         
         self.log("valid/loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         self.log("valid/perplexity", loss.exp(), on_step=True, on_epoch=True, prog_bar=True, logger=True)
@@ -329,7 +326,7 @@ class BiologicalInstructionTuning(LightningModule):
 
         text_input['input_ids'] = torch.tensor(text_input['input_ids']).long()
         text_input['attention_mask'] = torch.tensor(text_input['attention_mask']).long()
-                
+        
         inputs_embeds = self.get_inputs_embeddings(
             protein_input_ids=protein_inputs['input_ids'],
             protein_attention_mask=protein_inputs['attention_mask'],
@@ -345,10 +342,12 @@ class BiologicalInstructionTuning(LightningModule):
             attention_mask=attention_mask,
             max_new_tokens=32,
             # TODO: fix generation parameters
-            # temperature=0.7,
             # do_sample=True,
+            # temperature=0.7,
             # top_p=0.9,
-            # top_k=250
+            # top_k=50,
+            eos_token_id=self.language_tokenizer.eos_token_id, # type: ignore
+            pad_token_id=self.language_tokenizer.pad_token_id # type: ignore
         )
         
         return self.language_tokenizer.decode(output[0]) # type: ignore
