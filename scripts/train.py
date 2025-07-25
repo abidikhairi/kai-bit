@@ -16,6 +16,7 @@ from kai_bit.config import (
 from kai_bit.datasets import CsvDataModule
 from kai_bit.utils import load_object_from_json
 
+
 torch.set_float32_matmul_precision('medium')
 
 
@@ -74,7 +75,7 @@ def main(args):
         # max_steps=optimizer_config.total_steps,
         overfit_batches=4 if args.dry_run else 0,
         default_root_dir=args.experim_dir,
-        max_time='00:08:00:00', # training should not last more than 24 hours
+        max_time='00:08:00:00', # training should not last more than 8 hours
         accumulate_grad_batches=args.gradient_accumulation_steps,
         gradient_clip_val=0.5,
         enable_progress_bar=True,
@@ -83,12 +84,13 @@ def main(args):
             callbacks.ModelCheckpoint(
                 dirpath=f'{args.experim_dir}/checkpoints',
                 filename='bit-v1-{step:05d}',
-                monitor='valid/perplexity',
+                monitor='train/loss',
                 save_top_k=3,
-                mode='min'
+                mode='min',
+                every_n_train_steps=100
             ),
             callbacks.EarlyStopping(
-                monitor='valid_perplexity',
+                monitor='valid/loss',
                 patience=3
             ),
             callbacks.LearningRateMonitor(
