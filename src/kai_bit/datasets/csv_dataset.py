@@ -87,7 +87,10 @@ class CsvDataModule(LightningDataModule):
         for p, r in zip(prompts, responses):
             if not p.startswith(self.language_tokenizer.protein_token): # type: ignore
                 p = f"{self.language_tokenizer.protein_token} {p}" # type: ignore
-         
+
+            # force stop
+            r = f'{r} <|annotation_end|>'
+            
             user_input = self.language_tokenizer(p) # type: ignore
             user_input['input_ids'] = user_message_start['input_ids'] + user_input['input_ids'] + user_message_end['input_ids'] # type: ignore
             user_input['attention_mask'] = self._zeros(len(user_message_start['input_ids'])) + user_input['attention_mask'] + self._zeros(len(user_message_end['input_ids'])) # type: ignore
@@ -102,10 +105,12 @@ class CsvDataModule(LightningDataModule):
             input_ids = torch.tensor(input_ids).long()
             attention_mask = torch.tensor(attention_mask).long()
             
-            # labels = self._zeros(len(user_input['input_ids'])) + assistant_response['input_ids']
+            # train on assistant completion
+            labels = self._zeros(len(user_input['input_ids'])) + assistant_response['input_ids']
             
             # train on user inputs + assistant completion
-            labels = user_input['input_ids'] + assistant_response['input_ids']
+            # labels = user_input['input_ids'] + assistant_response['input_ids']
+            
             labels = torch.tensor(labels).long()
             
             labels = labels * attention_mask
