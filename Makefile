@@ -13,6 +13,7 @@ num_workers ?= 0
 optimizer_config_path ?= data/tmp/configs/optimizer_config.json
 projection_config_path ?= data/tmp/configs/projection_config.json
 training_mode_path ?= data/tmp/configs/training_mode.json
+max_epochs ?= 1
 
 .PHONY: train-tiny-local dry-run
 
@@ -32,6 +33,7 @@ train-tiny-local:
 		--prompt_column $(prompt_column) \
 		--response_column $(response_column) \
 		--num_workers $(num_workers) \
+		--max_epochs $(max_epochs)
 		--optimizer_config_path $(optimizer_config_path) \
 		--projection_config_path $(projection_config_path) \
 		--training_mode_path $(training_mode_path)

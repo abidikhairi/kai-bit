@@ -241,9 +241,9 @@ class BiologicalInstructionTuning(LightningModule):
         
         loss = self.loss_fn(logits, labels.view(-1))        
         
-        self.log("train/loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
-        self.log("train/perplexity", loss.exp(), on_step=True, on_epoch=True, logger=True)
-        self.log("learning_rate", self.trainer.optimizers[0].param_groups[0]['lr'], on_step=True, on_epoch=True, logger=True) # type: ignore
+        self.log("train/loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
+        self.log("train/perplexity", loss.exp(), on_step=True, on_epoch=True, logger=True, sync_dist=True)
+        self.log("learning_rate", self.trainer.optimizers[0].param_groups[0]['lr'], on_step=True, on_epoch=True, logger=True, sync_dist=True) # type: ignore
         
         return loss
 
@@ -282,8 +282,8 @@ class BiologicalInstructionTuning(LightningModule):
         
         loss = self.loss_fn(logits, labels.view(-1))        
         
-        self.log("valid/loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
-        self.log("valid/perplexity", loss.exp(), on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log("valid/loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
+        self.log("valid/perplexity", loss.exp(), on_step=True, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
         
         return loss
     
