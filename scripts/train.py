@@ -71,8 +71,9 @@ def main(args):
     trainer = Trainer(
         accelerator='auto',
         log_every_n_steps=100,
-        max_epochs=1,
+        max_epochs=args.max_epochs,
         # max_steps=optimizer_config.total_steps,
+        strategy='ddp_find_unused_parameters_false',
         overfit_batches=4 if args.dry_run else 0,
         default_root_dir=args.experim_dir,
         max_time='00:08:00:00', # training should not last more than 8 hours
@@ -121,6 +122,7 @@ if __name__ == '__main__':
     parser.add_argument('--optimizer_config_path', type=str, default='data/tmp/configs/optimizer_config.json')
     parser.add_argument('--training_mode_path', type=str, default='data/tmp/configs/training_mode.json')
     parser.add_argument('--projection_config_path', type=str, default='data/tmp/configs/projection_config.json')
+    parser.add_argument('--max_epochs', type=int, default=1)
 
     parser.add_argument('--protein_encoder_path', type=str, default='data/tmp/protein-encoder')
     parser.add_argument('--language_model_path', type=str, default='data/tmp/language-model')
