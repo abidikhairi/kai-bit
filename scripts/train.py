@@ -73,7 +73,7 @@ def main(args):
         log_every_n_steps=100,
         max_epochs=args.max_epochs,
         # max_steps=optimizer_config.total_steps,
-        strategy='ddp_find_unused_parameters_false',
+        strategy='ddp_find_unused_parameters_true',
         overfit_batches=4 if args.dry_run else 0,
         default_root_dir=args.experim_dir,
         max_time='00:08:00:00', # training should not last more than 8 hours
