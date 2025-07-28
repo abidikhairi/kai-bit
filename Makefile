@@ -10,6 +10,9 @@ prompt_column ?= prompt
 response_column ?= answer
 batch_size ?= 2
 num_workers ?= 0
+optimizer_config_path ?= data/tmp/configs/optimizer_config.json
+projection_config_path ?= data/tmp/configs/projection_config.json
+training_mode_path ?= data/tmp/configs/training_mode.json
 
 .PHONY: train-tiny-local dry-run
 
@@ -29,6 +32,9 @@ train-tiny-local:
 		--prompt_column $(prompt_column) \
 		--response_column $(response_column) \
 		--num_workers $(num_workers) \
+		--optimizer_config_path $(optimizer_config_path) \
+		--projection_config_path $(projection_config_path) \
+		--training_mode_path $(training_mode_path)
 		--batch_size $(batch_size) \
 		--gradient_accumulation_steps $(gradient_accumulation_steps) 
 
