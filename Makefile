@@ -10,12 +10,12 @@ prompt_column ?= prompt
 response_column ?= answer
 batch_size ?= 2
 num_workers ?= 0
-optimizer_config_path ?= data/tmp/configs/optimizer_config.json
-projection_config_path ?= data/tmp/configs/projection_config.json
-training_mode_path ?= data/tmp/configs/training_mode.json
+optimizer_config_path ?= data/tmp/configs/local/optimizer_config.json
+projection_config_path ?= data/tmp/configs/local/projection_config.json
+training_mode_path ?= data/tmp/configs/local/training_mode.json
 max_epochs ?= 1
 
-.PHONY: train-tiny-local dry-run
+.PHONY: train-tiny-local dry-run continue-training
 
 dry-run:
 	python scripts/train.py --dry_run --num_workers 0

@@ -1,0 +1,13 @@
+{
+    "lm_learning_rate": 0.00002,
+    "encoder_learning_rate": 0.00005,
+    "projector_learning_rate": 0.003,
+    "weight_decay": 0.01,
+    "betas": [
+        0.99,
+        0.98
+    ],
+    "eps": 1e-6,
+    "warmup_steps": 10000,
+    "total_steps": 100000
+}
