@@ -33,7 +33,7 @@ train-tiny-local:
 		--prompt_column $(prompt_column) \
 		--response_column $(response_column) \
 		--num_workers $(num_workers) \
-		--max_epochs $(max_epochs)
+		--max_epochs $(max_epochs) \
 		--optimizer_config_path $(optimizer_config_path) \
 		--projection_config_path $(projection_config_path) \
 		--training_mode_path $(training_mode_path)
