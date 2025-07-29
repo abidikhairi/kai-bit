@@ -15,7 +15,7 @@ projection_config_path ?= data/tmp/configs/local/projection_config.json
 training_mode_path ?= data/tmp/configs/local/training_mode.json
 max_epochs ?= 1
 
-.PHONY: train-tiny-local dry-run continue-training
+.PHONY: train-tiny-local dry-run continue-training run-server
 
 dry-run:
 	python scripts/train.py --dry_run --num_workers 0
@@ -53,3 +53,8 @@ continue-training:
 		--batch_size $(batch_size) \
 		--num_workers $(num_workers) \
 		--ckpt_path $(ckpt_path)
+
+run-server:
+	python src/kai_bit/api/server.py \
+		--ckpt_path data/tmp/ckpts/bit-v1-step=14900.ckpt \
+		--port 9998
